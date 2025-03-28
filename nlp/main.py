@@ -122,16 +122,10 @@ def apply_text_preprocessing(data, text_col):
 
 def extract_features(X_train, X_test):
     """Extract TF-IDF features from text data."""
-    english_stopwords = [
-        "the", "and", "is", "in", "to", "of", "that", "was", "for",
-        "on", "it", "this", "have", "has", "had", "with", "you", "they",
-        "at", "be", "use", "your", "we", "can", "will", "or", "my", "than",
-        "then", "else", "what", "when", "who", "which", "there", "from"
-    ]
     
     print("\nExtracting TF-IDF features...")
     vectorizer = TfidfVectorizer(
-        stop_words=english_stopwords,
+        stop_words='english',
         max_features=MAX_FEATURES,
         ngram_range=NGRAM_RANGE,
         min_df=2,
