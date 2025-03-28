@@ -186,6 +186,7 @@ def evaluate_model(model, X_test, y_test, label_map):
     
     target_names = [str(label_map[i]) for i in sorted(label_map.keys())]
     
+    report = classification_report(y_test, y_pred, target_names=target_names, output_dict=True)
     print(classification_report(y_test, y_pred, target_names=target_names))
     
     plt.figure(figsize=(10, 8))
@@ -197,7 +198,80 @@ def evaluate_model(model, X_test, y_test, label_map):
     plt.savefig('nlp_confusion_matrix.png')
     plt.close()
     
+    # Export metrics to PNG files
+    export_metrics_to_png(report, target_names, accuracy)
+    
     return accuracy
+
+
+def export_metrics_to_png(report, target_names, accuracy):
+    """Export classification metrics to PNG files."""
+    print("\nExporting metrics to PNG files...")
+    
+    # Overall accuracy plot
+    plt.figure(figsize=(6, 4))
+    plt.bar(['Accuracy'], [accuracy], color='blue')
+    plt.ylim(0, 1.0)
+    plt.title('Model Accuracy')
+    plt.ylabel('Score')
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.savefig('metrics_accuracy.png')
+    plt.close()
+    
+    # Extract metrics for each class
+    metrics = {'Precision': [], 'Recall': [], 'F1-Score': []}
+    for label in target_names:
+        if label in report:
+            metrics['Precision'].append(report[label]['precision'])
+            metrics['Recall'].append(report[label]['recall'])
+            metrics['F1-Score'].append(report[label]['f1-score'])
+    
+    # Class-specific metrics
+    plt.figure(figsize=(12, 8))
+    x = np.arange(len(target_names))
+    width = 0.25
+    
+    plt.bar(x - width, metrics['Precision'], width, label='Precision')
+    plt.bar(x, metrics['Recall'], width, label='Recall')
+    plt.bar(x + width, metrics['F1-Score'], width, label='F1-Score')
+    
+    plt.xlabel('Classes')
+    plt.ylabel('Score')
+    plt.title('Precision, Recall, and F1-Score by Class')
+    plt.xticks(x, target_names, rotation=45, ha='right')
+    plt.legend()
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.savefig('metrics_by_class.png')
+    plt.close()
+    
+    # Macro and weighted averages
+    plt.figure(figsize=(10, 6))
+    avg_metrics = {
+        'Macro Avg': [report['macro avg']['precision'], report['macro avg']['recall'], report['macro avg']['f1-score']],
+        'Weighted Avg': [report['weighted avg']['precision'], report['weighted avg']['recall'], report['weighted avg']['f1-score']]
+    }
+    
+    labels = ['Precision', 'Recall', 'F1-Score']
+    x = np.arange(len(labels))
+    width = 0.35
+    
+    plt.bar(x - width/2, avg_metrics['Macro Avg'], width, label='Macro Average')
+    plt.bar(x + width/2, avg_metrics['Weighted Avg'], width, label='Weighted Average')
+    
+    plt.xlabel('Metrics')
+    plt.ylabel('Score')
+    plt.title('Macro and Weighted Average Metrics')
+    plt.xticks(x, labels)
+    plt.legend()
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.ylim(0, 1.0)
+    plt.tight_layout()
+    plt.savefig('metrics_averages.png')
+    plt.close()
+    
+    print("Metrics exported successfully!")
 
 
 def analyze_feature_importance(model, vectorizer):
