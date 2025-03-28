@@ -27,7 +27,7 @@ nltk.download('stopwords', quiet=True)
 DATASET_ID = "jp797498e/twitter-entity-sentiment-analysis"
 TEST_SIZE = 0.2
 RANDOM_SEED = 42
-MAX_FEATURES = 5000
+MAX_FEATURES = 30000
 NGRAM_RANGE = (1, 3)  # Use unigrams, bigrams and trigrams
 
 
