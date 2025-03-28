@@ -1,0 +1,10 @@
+pandas
+kagglehub
+numpy
+matplotlib
+seaborn
+transformers
+torch
+nltk
+scikit-learn
+accelerate
