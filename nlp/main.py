@@ -13,6 +13,16 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+import nltk
+from nltk.stem import WordNetLemmatizer, PorterStemmer
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+
+# Download necessary NLTK resources
+nltk.download('punkt', quiet=True)
+nltk.download('punkt_tab', quiet=True)
+nltk.download('wordnet', quiet=True)
+nltk.download('stopwords', quiet=True)
 
 DATASET_ID = "jp797498e/twitter-entity-sentiment-analysis"
 TEST_SIZE = 0.2
@@ -103,19 +113,42 @@ def preprocess_data(data):
     return data.fillna("")
 
 
-def clean_text(text):
-    """Clean text using regex patterns."""
+def clean_text(text, use_stemming=True, use_lemmatization=True):
+    """Clean text using regex patterns and apply stemming and/or lemmatization."""
     text = str(text).lower()
     text = re.sub(r'[^a-z\s!?.,]', '', text)
     text = re.sub(r'([!?])\1+', r'\1', text)
+    
+    tokens = word_tokenize(text)
+    
+    stemmer = PorterStemmer()
+    lemmatizer = WordNetLemmatizer()
+    
+    processed_tokens = []
+    for token in tokens:
+        if use_stemming:
+            token = stemmer.stem(token)
+            
+        if use_lemmatization:
+            token = lemmatizer.lemmatize(token)
+            
+        processed_tokens.append(token)
+    
+    text = ' '.join(processed_tokens)
     text = ' '.join(text.split())
+    
     return text
 
 
-def apply_text_preprocessing(data, text_col):
+def apply_text_preprocessing(data, text_col, use_stemming=True, use_lemmatization=True):
     """Apply text preprocessing to the dataset."""
     print("\nApplying text preprocessing...")
-    data['processed_text'] = data[text_col].apply(clean_text)
+    print(f"Using stemming: {use_stemming}")
+    print(f"Using lemmatization: {use_lemmatization}")
+    
+    data['processed_text'] = data[text_col].apply(
+        lambda x: clean_text(x, use_stemming=use_stemming, use_lemmatization=use_lemmatization)
+    )
     print("Text preprocessing completed")
     return data
 
@@ -353,7 +386,12 @@ def main():
     
     clean_data = preprocess_data(data)
     
-    processed_data = apply_text_preprocessing(clean_data, text_col)
+    processed_data = apply_text_preprocessing(
+        clean_data, 
+        text_col,
+        use_stemming=False,
+        use_lemmatization=True
+    )
     
     y_labels = processed_data[sentiment_col].tolist()
     y_ids, label_map = map_labels_to_ids(y_labels)
